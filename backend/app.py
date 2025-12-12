@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from db import init_db
-from routes import assistant, categorize, gmail
+from routes import assistant, categorize, gmail, accounts, scheduler, templates, categories, threads
 
 load_dotenv()
 
@@ -80,7 +80,7 @@ async def rate_limiter(request: Request, call_next):
     window.append(now)
     try:
         response = await call_next(request)
-    except Exception as exc:  # centralized error logging
+    except Exception:  # centralized error logging
         logging.exception("Unhandled error")
         return JSONResponse(status_code=500, content={"detail": "Internal server error"})
     return response
@@ -88,13 +88,23 @@ async def rate_limiter(request: Request, call_next):
 app.include_router(gmail.router, prefix="/gmail", tags=["Gmail"])
 app.include_router(categorize.router, prefix="/categorize", tags=["Categorization"])
 app.include_router(assistant.router, prefix="/assistant", tags=["AI Assistant"])
+app.include_router(accounts.router, prefix="/accounts", tags=["Accounts"])
+app.include_router(scheduler.router, prefix="/scheduler", tags=["Scheduler"])
+app.include_router(templates.router, prefix="/templates", tags=["Templates"])
+app.include_router(categories.router, prefix="/categories", tags=["Categories"])
+app.include_router(threads.router, prefix="/threads", tags=["Threads"])
+
+
+# Initialize Prometheus instrumentation before startup
+Instrumentator().instrument(app).expose(app)
 
 
 @app.on_event("startup")
 async def _startup():
     init_db()
-    # Expose /metrics for Prometheus scraping
-    Instrumentator().instrument(app).expose(app)
+    # Initialize default categories
+    from services.category_service import initialize_default_categories
+    initialize_default_categories()
 
 
 @app.get("/", tags=["Health"])

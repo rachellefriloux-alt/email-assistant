@@ -1,5 +1,6 @@
 import logging
 from functools import lru_cache
+from typing import Optional
 from transformers import pipeline
 
 log = logging.getLogger(__name__)
@@ -15,6 +16,10 @@ FALLBACK_KEYWORDS = {
     "Promotion": ["sale", "offer", "discount", "promotion", "deal", "limited time"],
     "Spam": ["lottery", "winner", "prize", "crypto", "inheritance", "urgent transfer"],
     "Personal": ["family", "friend", "party", "dinner", "weekend", "love"],
+    "Travel": ["flight", "hotel", "booking", "reservation", "trip", "vacation"],
+    "Shopping": ["order", "delivery", "shipping", "purchase", "cart", "product"],
+    "Newsletter": ["newsletter", "subscribe", "unsubscribe", "digest", "weekly"],
+    "Social": ["social media", "notification", "friend request", "comment", "like"],
 }
 
 URGENCY_KEYWORDS = ["asap", "urgent", "deadline", "immediately", "critical", "overdue", "action required"]
@@ -39,9 +44,16 @@ def get_sentiment_analyzer():
             return None
     return _sentiment_analyzer
 
-def analyze_email(subject: str, body: str) -> dict:
-    """Comprehensive AI analysis of an email with light caching."""
+def analyze_email(subject: str, body: str, account_id: Optional[int] = None, auto_create_category: bool = True) -> dict:
+    """Comprehensive AI analysis of an email with light caching and dynamic category creation."""
     category, sentiment, urgency = _analyze_cached(subject, body)
+    
+    # Auto-create category if enabled and using dynamic categorization
+    if auto_create_category:
+        from services.category_service import auto_create_category_if_needed, increment_category_count
+        category = auto_create_category_if_needed(category, account_id)
+        increment_category_count(category, account_id)
+    
     return {"category": category, "sentiment": sentiment, "urgency": urgency}
 
 
@@ -55,7 +67,12 @@ def _analyze_cached(subject: str, body: str) -> tuple[str, str, str]:
     classifier = get_classifier()
     if classifier:
         try:
-            categories = ["Billing", "Account Info", "Work Update", "Promotion", "Spam", "Personal"]
+            # Use expanded category list for better classification
+            categories = [
+                "Billing", "Account Info", "Work Update", "Promotion", "Spam", "Personal",
+                "Travel", "Shopping", "Newsletter", "Social", "Support", "Legal", 
+                "Education", "Healthcare", "Finance"
+            ]
             result = classifier(truncated_text, candidate_labels=categories)
             category = result['labels'][0]
         except Exception:

@@ -4,12 +4,30 @@ AI-powered Gmail helper that fetches, categorizes, and summarizes emails with GP
 
 ## Features
 
-- Gmail fetch (OAuth) with optional bundled sample data for offline use.
-- AI categorization (zero-shot transformer + keyword fallback) and GPT reply generation.
-- React dashboard with dark/light toggle, category tabs, assistant panel, and GPT suggestion buttons.
-- Docker Compose for local dev; Helm charts and raw k8s manifests for clusters.
-- Terraform starters for AWS and GCP; GitHub Actions CI/CD example.
-- Monitoring stack (Prometheus + Grafana) with alerting via Alertmanager.
+- **Email Management**:
+  - Gmail fetch (OAuth) with optional bundled sample data for offline use
+  - Advanced search and filtering (by sender, subject, category, date range, read/starred status)
+  - Multi-account support with per-account settings
+  - Scheduled email fetching with configurable intervals
+  - **Email threading/conversation grouping** - organize related emails into threads
+  - **Bulk operations** - archive, delete, star, or mark multiple emails at once
+  - Attachment detection and tracking
+- **AI-Powered Features**:
+  - **Dynamic category creation** - AI automatically creates new categories as needed
+  - AI categorization with expanded detection (15+ categories including Travel, Shopping, Newsletter, Social, Support, Legal, Education, Healthcare, Finance)
+  - GPT-powered reply generation
+  - Email sentiment and urgency analysis
+  - Smart category management with usage tracking
+- **Reply Templates**:
+  - Create and manage reusable reply templates
+  - Variable substitution (e.g., {{name}}, {{order_id}})
+  - Template usage tracking
+- **Infrastructure**:
+  - React dashboard with dark/light toggle, category tabs, assistant panel
+  - Docker Compose for local dev; Helm charts and raw k8s manifests for clusters
+  - Terraform starters for AWS and GCP; GitHub Actions CI/CD example
+  - Monitoring stack (Prometheus + Grafana) with alerting via Alertmanager
+  - SQLite for development, PostgreSQL for production (see [migration guide](docs/postgresql-migration.md))
 
 ## Prerequisites
 
@@ -82,12 +100,70 @@ docker-compose up --build
 
 ## API Endpoints (core)
 
-- `GET /` health check
-- `GET /healthz` liveness
-- `GET /readiness` readiness
-- `GET /gmail/fetch?use_sample=true|false` fetch Gmail or sample data
-- `POST /categorize/email` → `{ subject, body }`
-- `POST /assistant/reply` → `{ prompt }`
+### Health & Status
+- `GET /` - Health check
+- `GET /healthz` - Liveness probe
+- `GET /readiness` - Readiness probe
+
+### Email Operations
+- `GET /gmail/fetch?use_sample=true|false` - Fetch Gmail or sample data
+- `GET /gmail/list` - List saved emails with pagination
+- `GET /gmail/search` - Search emails with filters (query, sender, category, date range, etc.)
+- `POST /gmail/delete` - Delete emails
+- `POST /gmail/move` - Move emails to label
+
+### Bulk Operations (NEW)
+- `POST /gmail/bulk/archive` - Archive multiple emails: `{ email_ids: [1, 2, 3] }`
+- `POST /gmail/bulk/delete` - Delete multiple emails
+- `POST /gmail/bulk/mark-read` - Mark multiple as read
+- `POST /gmail/bulk/mark-unread` - Mark multiple as unread
+- `POST /gmail/bulk/star` - Star multiple emails
+- `POST /gmail/bulk/unstar` - Unstar multiple emails
+
+### AI & Categorization
+- `POST /categorize/email` - Categorize email with auto-category creation: `{ subject, body }`
+- `POST /assistant/reply` - Generate reply: `{ prompt }`
+- `POST /assistant/gemini/summarize` - Summarize email with Gemini
+- `POST /assistant/gemini/actions` - Extract action items
+- `POST /assistant/gemini/rewrite` - Rewrite draft: `{ text, tone }`
+
+### Category Management (NEW)
+- `POST /categories/` - Create new category
+- `GET /categories/` - List all categories (system + custom)
+- `GET /categories/{id}` - Get category details
+- `PATCH /categories/{id}` - Update category
+- `DELETE /categories/{id}` - Delete category (non-system only)
+
+### Email Threading (NEW)
+- `GET /threads/` - List email threads with filters
+- `GET /threads/{thread_id}/emails` - Get all emails in a thread
+- `POST /threads/{thread_id}/archive` - Archive thread
+- `POST /threads/{thread_id}/unarchive` - Unarchive thread
+
+### Account Management
+- `POST /accounts/` - Create new account
+- `GET /accounts/` - List all accounts
+- `GET /accounts/{id}` - Get account details
+- `PATCH /accounts/{id}` - Update account settings
+- `PATCH /accounts/{id}/tokens` - Update OAuth tokens
+- `DELETE /accounts/{id}` - Delete account
+
+### Template Management
+- `POST /templates/` - Create new template
+- `GET /templates/` - List templates
+- `GET /templates/{id}` - Get template details
+- `GET /templates/{id}/variables` - Get template variables
+- `PATCH /templates/{id}` - Update template
+- `DELETE /templates/{id}` - Delete template
+- `POST /templates/render` - Render template with variables
+
+### Scheduler
+- `POST /scheduler/start` - Start scheduled fetching for all accounts
+- `POST /scheduler/account` - Add/update schedule for account
+- `DELETE /scheduler/account/{id}` - Remove schedule
+- `GET /scheduler/jobs` - List scheduled jobs
+
+For full API documentation, visit `/docs` when the backend is running.
 
 ## Monitoring & Alerting
 

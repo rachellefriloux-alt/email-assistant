@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 from sqlmodel import SQLModel, Session, create_engine
 
