@@ -1,7 +1,6 @@
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
-from typing import Optional
 
 from services.gpt_service import generate_reply
 from services.gemini_service import generate_summary, extract_action_items, rewrite_draft

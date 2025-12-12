@@ -156,7 +156,7 @@ def test_delete_account(client):
 def test_list_active_accounts_only(client):
     """Test listing only active accounts."""
     # Create active and inactive accounts
-    active_resp = client.post("/accounts/", json={"email": "active@example.com"})
+    client.post("/accounts/", json={"email": "active@example.com"})
     inactive_resp = client.post("/accounts/", json={"email": "inactive@example.com"})
     
     # Disable one account

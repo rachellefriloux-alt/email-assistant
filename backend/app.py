@@ -80,7 +80,7 @@ async def rate_limiter(request: Request, call_next):
     window.append(now)
     try:
         response = await call_next(request)
-    except Exception as exc:  # centralized error logging
+    except Exception:  # centralized error logging
         logging.exception("Unhandled error")
         return JSONResponse(status_code=500, content={"detail": "Internal server error"})
     return response

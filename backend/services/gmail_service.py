@@ -35,7 +35,7 @@ def authenticate_gmail():
                 creds = flow.run_local_server(port=0)
                 log.info("gmail token generated via oauth flow")
             TOKEN_PATH.write_text(creds.to_json())
-        except Exception as exc:
+        except Exception:
             log.exception("gmail auth failed")
             raise
     service = build('gmail', 'v1', credentials=creds)

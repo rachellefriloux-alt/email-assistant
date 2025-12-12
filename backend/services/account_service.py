@@ -47,7 +47,7 @@ def list_accounts(active_only: bool = False) -> List[Account]:
     with get_session() as session:
         stmt = select(Account)
         if active_only:
-            stmt = stmt.where(Account.is_active == True)
+            stmt = stmt.where(Account.is_active.is_(True))
         return list(session.exec(stmt))
 
 
