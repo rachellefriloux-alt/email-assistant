@@ -150,6 +150,40 @@ def mark_status(ids: List[int], status: str) -> int:
         return len(records)
 
 
+def bulk_archive_emails(ids: List[int]) -> int:
+    """Archive multiple emails by setting status to 'archived'."""
+    return mark_status(ids, "archived")
+
+
+def bulk_delete_emails(ids: List[int]) -> int:
+    """Delete multiple emails by setting status to 'deleted'."""
+    return mark_status(ids, "deleted")
+
+
+def bulk_mark_read(ids: List[int], is_read: bool = True) -> int:
+    """Mark multiple emails as read or unread."""
+    with get_session() as session:
+        stmt = select(EmailRecord).where(EmailRecord.id.in_(ids))
+        records = list(session.exec(stmt))
+        for rec in records:
+            rec.is_read = is_read
+            rec.updated_at = datetime.utcnow()
+        session.commit()
+        return len(records)
+
+
+def bulk_star_emails(ids: List[int], is_starred: bool = True) -> int:
+    """Star or unstar multiple emails."""
+    with get_session() as session:
+        stmt = select(EmailRecord).where(EmailRecord.id.in_(ids))
+        records = list(session.exec(stmt))
+        for rec in records:
+            rec.is_starred = is_starred
+            rec.updated_at = datetime.utcnow()
+        session.commit()
+        return len(records)
+
+
 def delete_by_gmail_ids(gmail_ids: List[str]) -> int:
     with get_session() as session:
         stmt = select(EmailRecord).where(EmailRecord.gmail_id.in_(gmail_ids))

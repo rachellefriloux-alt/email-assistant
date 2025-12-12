@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from db import init_db
-from routes import assistant, categorize, gmail, accounts, scheduler, templates
+from routes import assistant, categorize, gmail, accounts, scheduler, templates, categories, threads
 
 load_dotenv()
 
@@ -91,6 +91,8 @@ app.include_router(assistant.router, prefix="/assistant", tags=["AI Assistant"])
 app.include_router(accounts.router, prefix="/accounts", tags=["Accounts"])
 app.include_router(scheduler.router, prefix="/scheduler", tags=["Scheduler"])
 app.include_router(templates.router, prefix="/templates", tags=["Templates"])
+app.include_router(categories.router, prefix="/categories", tags=["Categories"])
+app.include_router(threads.router, prefix="/threads", tags=["Threads"])
 
 
 # Initialize Prometheus instrumentation before startup
@@ -100,6 +102,9 @@ Instrumentator().instrument(app).expose(app)
 @app.on_event("startup")
 async def _startup():
     init_db()
+    # Initialize default categories
+    from services.category_service import initialize_default_categories
+    initialize_default_categories()
 
 
 @app.get("/", tags=["Health"])

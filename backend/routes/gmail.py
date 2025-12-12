@@ -6,7 +6,16 @@ from fastapi import APIRouter, HTTPException, Query
 from prometheus_client import Counter
 from pydantic import BaseModel
 
-from services.email_store import delete_by_gmail_ids, list_emails, search_emails, upsert_emails
+from services.email_store import (
+    bulk_archive_emails,
+    bulk_delete_emails,
+    bulk_mark_read,
+    bulk_star_emails,
+    delete_by_gmail_ids,
+    list_emails,
+    search_emails,
+    upsert_emails,
+)
 from services.gmail_service import (
     authenticate_gmail,
     delete_emails,
@@ -38,6 +47,10 @@ class MoveRequest(BaseModel):
     gmail_ids: List[str]
     label_id: str
     skip_remote: bool = False
+
+
+class BulkOperationRequest(BaseModel):
+    email_ids: List[int]
 
 
 @router.get("/fetch")
@@ -113,3 +126,45 @@ def search_saved_emails(
         offset=offset,
     )
     return {"emails": [rec.model_dump() for rec in records], "count": len(records)}
+
+
+@router.post("/bulk/archive")
+def bulk_archive(payload: BulkOperationRequest):
+    """Archive multiple emails at once."""
+    count = bulk_archive_emails(payload.email_ids)
+    return {"archived": count}
+
+
+@router.post("/bulk/delete")
+def bulk_delete(payload: BulkOperationRequest):
+    """Delete multiple emails at once."""
+    count = bulk_delete_emails(payload.email_ids)
+    return {"deleted": count}
+
+
+@router.post("/bulk/mark-read")
+def bulk_mark_as_read(payload: BulkOperationRequest):
+    """Mark multiple emails as read."""
+    count = bulk_mark_read(payload.email_ids, is_read=True)
+    return {"marked_read": count}
+
+
+@router.post("/bulk/mark-unread")
+def bulk_mark_as_unread(payload: BulkOperationRequest):
+    """Mark multiple emails as unread."""
+    count = bulk_mark_read(payload.email_ids, is_read=False)
+    return {"marked_unread": count}
+
+
+@router.post("/bulk/star")
+def bulk_star(payload: BulkOperationRequest):
+    """Star multiple emails."""
+    count = bulk_star_emails(payload.email_ids, is_starred=True)
+    return {"starred": count}
+
+
+@router.post("/bulk/unstar")
+def bulk_unstar(payload: BulkOperationRequest):
+    """Unstar multiple emails."""
+    count = bulk_star_emails(payload.email_ids, is_starred=False)
+    return {"unstarred": count}

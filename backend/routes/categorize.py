@@ -20,7 +20,10 @@ router = APIRouter()
 
 @router.post("/email")
 def categorize(payload: EmailPayload):
-    analysis = analyze_email(payload.subject, payload.body)
+    # Extract account_id if available from the email payload
+    account_id = payload.dict().get("account_id") if hasattr(payload, "account_id") else None
+    
+    analysis = analyze_email(payload.subject, payload.body, account_id=account_id, auto_create_category=True)
     record = upsert_emails(
         [
             {
