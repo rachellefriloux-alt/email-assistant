@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-assistant-backend
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: {{ .Values.image.backend }}
+        ports:
+        - containerPort: {{ .Values.service.backendPort }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.secretName }}
+        - configMapRef:
+            name: {{ .Values.configMapName }}
+        resources:
+{{ toYaml .Values.resources.backend | indent 10 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.probes.backend.liveness.path }}
+            port: {{ .Values.probes.backend.liveness.port }}
+          initialDelaySeconds: {{ .Values.probes.backend.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.backend.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.probes.backend.liveness.timeoutSeconds }}
+          failureThreshold: {{ .Values.probes.backend.liveness.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.probes.backend.readiness.path }}
+            port: {{ .Values.probes.backend.readiness.port }}
+          initialDelaySeconds: {{ .Values.probes.backend.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.backend.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.probes.backend.readiness.timeoutSeconds }}
+          failureThreshold: {{ .Values.probes.backend.readiness.failureThreshold }}
+        securityContext:
+{{ toYaml .Values.securityContext | indent 10 }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-assistant-frontend
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: {{ .Values.image.frontend }}
+        ports:
+        - containerPort: {{ .Values.service.frontendPort }}
+        env:
+        - name: VITE_API_BASE
+          value: {{ .Values.env.VITE_API_BASE }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.configMapName }}
+        resources:
+{{ toYaml .Values.resources.frontend | indent 10 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.probes.frontend.liveness.path }}
+            port: {{ .Values.probes.frontend.liveness.port }}
+          initialDelaySeconds: {{ .Values.probes.frontend.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.frontend.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.probes.frontend.liveness.timeoutSeconds }}
+          failureThreshold: {{ .Values.probes.frontend.liveness.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.probes.frontend.readiness.path }}
+            port: {{ .Values.probes.frontend.readiness.port }}
+          initialDelaySeconds: {{ .Values.probes.frontend.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.frontend.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.probes.frontend.readiness.timeoutSeconds }}
+          failureThreshold: {{ .Values.probes.frontend.readiness.failureThreshold }}
+        securityContext:
+{{ toYaml .Values.securityContext | indent 10 }}

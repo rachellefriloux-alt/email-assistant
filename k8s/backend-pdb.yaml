@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: email-assistant-backend-pdb
+  namespace: default
+  labels:
+    app: email-backend
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: email-backend

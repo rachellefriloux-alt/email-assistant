@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-assistant-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: email-backend
+  template:
+    metadata:
+      labels:
+        app: email-backend
+    spec:
+      containers:
+        - name: backend
+          image: your-backend-image:latest
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: email-assistant-secret
+            - configMapRef:
+                name: email-assistant-config

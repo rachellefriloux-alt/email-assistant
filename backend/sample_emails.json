@@ -1,0 +1,15 @@
+
+[
+  {
+    "subject": "Invoice #123 for your subscription",
+    "body": "Your monthly invoice is attached. Please review."
+  },
+  {
+    "subject": "Login details for your account",
+    "body": "Username: johndoe, Password: ********"
+  },
+  {
+    "subject": "Special promotion just for you!",
+    "body": "Get 50% off on your next purchase."
+  }
+]

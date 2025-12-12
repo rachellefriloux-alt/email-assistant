@@ -1,0 +1,44 @@
+groups:
+  - name: email-assistant-alerts
+    rules:
+      - alert: BackendInstanceDown
+        expr: up{app="email-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend {{ $labels.instance }} is down"
+
+      - alert: HighBackend5xxRate
+        expr: rate(http_requests_total{status=~"5..",app="email-backend"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High 5xx rate for backend"
+          description: "5xx responses exceed threshold"
+
+      - alert: HighBackendLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{app="email-backend"}[5m])) by (le)) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend latency p95 high"
+          description: "p95 latency exceeds 1s"
+
+      - alert: BackendRestartLoop
+        expr: increase(process_start_time_seconds{app="email-backend"}[10m]) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend restarting frequently"
+
+      - alert: LowBackendReplicas
+        expr: kube_deployment_status_replicas_available{deployment="email-assistant-backend"} < 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend replicas below minimum"

@@ -1,0 +1,101 @@
+replicaCount: 2
+
+image:
+  backend: your-docker-backend-image
+  frontend: your-docker-frontend-image
+
+resources:
+  backend:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  frontend:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
+
+probes:
+  backend:
+    liveness:
+      path: /healthz
+      port: 8000
+      initialDelaySeconds: 10
+      periodSeconds: 15
+      timeoutSeconds: 2
+      failureThreshold: 3
+    readiness:
+      path: /readiness
+      port: 8000
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 2
+      failureThreshold: 3
+  frontend:
+    liveness:
+      path: /
+      port: 3000
+      initialDelaySeconds: 10
+      periodSeconds: 15
+      timeoutSeconds: 2
+      failureThreshold: 3
+    readiness:
+      path: /
+      port: 3000
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 2
+      failureThreshold: 3
+
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  backendPort: 8000
+  frontendPort: 3000
+
+secretName: email-assistant-secret
+configMapName: email-assistant-config
+
+env:
+  OPENAI_API_KEY: "your_openai_api_key"
+  GOOGLE_CLIENT_ID: "your_google_client_id"
+  GOOGLE_CLIENT_SECRET: "your_google_client_secret"
+  ALLOWED_ORIGINS: "http://localhost:3000"
+  DATABASE_URL: "sqlite:///./emails.db"
+  VITE_API_BASE: "http://localhost:8000"
+
+ingress:
+  enabled: false
+  className: nginx
+  host: email-assistant.local
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: email-assistant-tls
+
+hpa:
+  backend:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    cpu: 70
+  frontend:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 5
+    cpu: 70
+
+pdb:
+  backend:
+    enabled: true
+    minAvailable: 1

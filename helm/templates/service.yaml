@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: email-assistant-backend
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: backend
+  ports:
+    - port: {{ .Values.service.backendPort }}
+      targetPort: {{ .Values.service.backendPort }}
+      name: http-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: email-assistant-frontend
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: frontend
+  ports:
+    - port: {{ .Values.service.frontendPort }}
+      targetPort: {{ .Values.service.frontendPort }}
+      name: http-frontend

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: email-assistant
+description: A Helm chart for Gmail Email Assistant
+version: 0.1.0
+appVersion: "1.0"

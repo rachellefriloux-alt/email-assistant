@@ -1,0 +1,50 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: email-assistant-ingress
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | default "nginx" }}
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host | default "email-assistant.local" }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host | default "email-assistant.local" }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: email-assistant-frontend
+                port:
+                  number: {{ .Values.service.frontendPort }}
+          - path: /assistant
+            pathType: Prefix
+            backend:
+              service:
+                name: email-assistant-backend
+                port:
+                  number: {{ .Values.service.backendPort }}
+          - path: /categorize
+            pathType: Prefix
+            backend:
+              service:
+                name: email-assistant-backend
+                port:
+                  number: {{ .Values.service.backendPort }}
+          - path: /gmail
+            pathType: Prefix
+            backend:
+              service:
+                name: email-assistant-backend
+                port:
+                  number: {{ .Values.service.backendPort }}
+{{- end }}

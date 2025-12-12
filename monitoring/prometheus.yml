@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+
+rule_files:
+  - alert.rules.yml
+
+scrape_configs:
+  - job_name: 'email-assistant-backend'
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['backend:8000']
+        labels:
+          app: email-backend
+  - job_name: 'email-assistant-frontend'
+    metrics_path: /metrics
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['frontend:3000']

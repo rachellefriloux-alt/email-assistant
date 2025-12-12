@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: email-assistant
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    - host: email-assistant.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: email-assistant-frontend
+                port:
+                  number: 3000
+          - path: /gmail
+            pathType: Prefix
+            backend:
+              service:
+                name: email-assistant-backend
+                port:
+                  number: 8000
+          - path: /assistant
+            pathType: Prefix
+            backend:
+              service:
+                name: email-assistant-backend
+                port:
+                  number: 8000
+          - path: /categorize
+            pathType: Prefix
+            backend:
+              service:
+                name: email-assistant-backend
+                port:
+                  number: 8000

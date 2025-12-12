@@ -1,0 +1,39 @@
+{
+  "title": "Email Assistant Backend",
+  "schemaVersion": 16,
+  "version": 1,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Backend Up",
+      "targets": [
+        {"expr": "up{app=\"email-backend\"}"}
+      ],
+      "gridPos": {"h": 3, "w": 4, "x": 0, "y": 0}
+    },
+    {
+      "type": "graph",
+      "title": "p95 Latency",
+      "targets": [
+        {"expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{app=\"email-backend\"}[5m])) by (le))"}
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 4, "y": 0}
+    },
+    {
+      "type": "graph",
+      "title": "5xx Rate",
+      "targets": [
+        {"expr": "rate(http_requests_total{status=~\"5..\",app=\"email-backend\"}[5m])"}
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+    },
+    {
+      "type": "graph",
+      "title": "Request Throughput",
+      "targets": [
+        {"expr": "rate(http_requests_total{app=\"email-backend\"}[5m])"}
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+    }
+  ]
+}

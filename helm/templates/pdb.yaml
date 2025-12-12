@@ -1,0 +1,11 @@
+{{- if .Values.pdb.backend.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: email-assistant-backend-pdb
+spec:
+  minAvailable: {{ .Values.pdb.backend.minAvailable }}
+  selector:
+    matchLabels:
+      app: backend
+{{- end }}
