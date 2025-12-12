@@ -1,8 +1,8 @@
 # Email Assistant Overview
 
-Email Assistant is a full-stack Gmail helper. It fetches, categorizes, and summarizes emails, then suggests AI-powered replies. It ships with a FastAPI backend, a React + Vite + Tailwind frontend, and deployable artifacts for Docker, Helm, Kubernetes, and Terraform. A sample dataset makes it usable even without live Gmail access.
+Email Assistant is a full-stack Gmail helper. It fetches, categorizes, and summarizes emails, then suggests AI-powered replies. It ships with a FastAPI backend and a React + Vite + Tailwind frontend. Deployable artifacts are included for Docker, Helm, Kubernetes, and Terraform. A sample dataset makes it usable even without live Gmail access.
 
-### Why it’s notable
+## Why it’s notable
 - Rich email operations: threading, advanced search, and bulk actions (archive, delete, mark read/unread, star)
 - AI categorization and analysis: automatic category creation plus sentiment/urgency insights
 - AI writing assistance: GPT-based reply generation alongside Gemini summarization/rewrite
