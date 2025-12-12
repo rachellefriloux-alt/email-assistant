@@ -13,8 +13,10 @@ def upsert_emails(emails: Iterable[dict]) -> List[EmailRecord]:
     with get_session() as session:
         for email in emails:
             gmail_id = email.get("gmail_id")
-            stmt = select(EmailRecord).where(EmailRecord.gmail_id == gmail_id) if gmail_id else None
-            existing: Optional[EmailRecord] = session.exec(stmt).first() if stmt else None
+            existing: Optional[EmailRecord] = None
+            if gmail_id:
+                stmt = select(EmailRecord).where(EmailRecord.gmail_id == gmail_id)
+                existing = session.exec(stmt).first()
 
             defaults = {
                 "subject": email.get("subject", "No Subject"),

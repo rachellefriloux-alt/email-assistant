@@ -53,7 +53,7 @@ def create_new_template(payload: TemplateCreate):
         tags=payload.tags,
         account_id=payload.account_id,
     )
-    return {"template": template.dict()}
+    return {"template": template.model_dump()}
 
 
 @router.get("/")
@@ -63,7 +63,7 @@ def list_all_templates(
 ):
     """List all templates with optional filtering."""
     templates = list_templates(category=category, account_id=account_id)
-    return {"templates": [t.dict() for t in templates]}
+    return {"templates": [t.model_dump() for t in templates]}
 
 
 @router.get("/{template_id}")
@@ -72,7 +72,7 @@ def get_template_details(template_id: int):
     template = get_template(template_id)
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
-    return {"template": template.dict()}
+    return {"template": template.model_dump()}
 
 
 @router.get("/{template_id}/variables")
@@ -96,7 +96,7 @@ def update_existing_template(template_id: int, payload: TemplateUpdate):
     )
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
-    return {"template": template.dict()}
+    return {"template": template.model_dump()}
 
 
 @router.delete("/{template_id}")

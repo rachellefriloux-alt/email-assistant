@@ -93,11 +93,13 @@ app.include_router(scheduler.router, prefix="/scheduler", tags=["Scheduler"])
 app.include_router(templates.router, prefix="/templates", tags=["Templates"])
 
 
+# Initialize Prometheus instrumentation before startup
+Instrumentator().instrument(app).expose(app)
+
+
 @app.on_event("startup")
 async def _startup():
     init_db()
-    # Expose /metrics for Prometheus scraping
-    Instrumentator().instrument(app).expose(app)
 
 
 @app.get("/", tags=["Health"])

@@ -45,7 +45,7 @@ def fetch_gmail_emails(use_sample: bool = Query(False, description="Use bundled 
     emails = load_sample_emails() if use_sample else fetch_emails(authenticate_gmail())
     records = upsert_emails(emails)
     EMAIL_FETCH_COUNTER.labels(source="sample" if use_sample else "live").inc(len(records))
-    return {"emails": [rec.dict() for rec in records]}
+    return {"emails": [rec.model_dump() for rec in records]}
 
 
 @router.get("/list")
@@ -56,7 +56,7 @@ def list_saved_emails(
     offset: int = Query(0, ge=0),
 ):
     records = list_emails(status=status, category=category, limit=limit, offset=offset)
-    return {"emails": [rec.dict() for rec in records]}
+    return {"emails": [rec.model_dump() for rec in records]}
 
 
 @router.post("/delete")
@@ -112,4 +112,4 @@ def search_saved_emails(
         limit=limit,
         offset=offset,
     )
-    return {"emails": [rec.dict() for rec in records], "count": len(records)}
+    return {"emails": [rec.model_dump() for rec in records], "count": len(records)}

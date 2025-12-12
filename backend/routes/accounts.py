@@ -53,14 +53,14 @@ def create_new_account(payload: AccountCreate):
         refresh_token=payload.refresh_token,
         token_expiry=payload.token_expiry,
     )
-    return {"account": account.dict()}
+    return {"account": account.model_dump()}
 
 
 @router.get("/")
 def list_all_accounts(active_only: bool = False):
     """List all accounts."""
     accounts = list_accounts(active_only=active_only)
-    return {"accounts": [acc.dict() for acc in accounts]}
+    return {"accounts": [acc.model_dump() for acc in accounts]}
 
 
 @router.get("/{account_id}")
@@ -69,7 +69,7 @@ def get_account_details(account_id: int):
     account = get_account(account_id)
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
-    return {"account": account.dict()}
+    return {"account": account.model_dump()}
 
 
 @router.patch("/{account_id}")
@@ -84,7 +84,7 @@ def update_account(account_id: int, payload: AccountUpdate):
     )
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
-    return {"account": account.dict()}
+    return {"account": account.model_dump()}
 
 
 @router.patch("/{account_id}/tokens")
@@ -98,7 +98,7 @@ def update_tokens(account_id: int, payload: TokenUpdate):
     )
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
-    return {"account": account.dict()}
+    return {"account": account.model_dump()}
 
 
 @router.delete("/{account_id}")

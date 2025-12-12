@@ -35,4 +35,4 @@ def categorize(payload: EmailPayload):
             }
         ]
     )[0]
-    return {"category": analysis["category"], "email": record.dict()}
+    return {"category": analysis["category"], "email": record.model_dump()}
