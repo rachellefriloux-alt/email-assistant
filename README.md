@@ -9,10 +9,15 @@ AI-powered Gmail helper that fetches, categorizes, and summarizes emails with GP
   - Advanced search and filtering (by sender, subject, category, date range, read/starred status)
   - Multi-account support with per-account settings
   - Scheduled email fetching with configurable intervals
+  - **Email threading/conversation grouping** - organize related emails into threads
+  - **Bulk operations** - archive, delete, star, or mark multiple emails at once
+  - Attachment detection and tracking
 - **AI-Powered Features**:
-  - AI categorization (zero-shot transformer + keyword fallback)
+  - **Dynamic category creation** - AI automatically creates new categories as needed
+  - AI categorization with expanded detection (15+ categories including Travel, Shopping, Newsletter, Social, Support, Legal, Education, Healthcare, Finance)
   - GPT-powered reply generation
   - Email sentiment and urgency analysis
+  - Smart category management with usage tracking
 - **Reply Templates**:
   - Create and manage reusable reply templates
   - Variable substitution (e.g., {{name}}, {{order_id}})
@@ -107,12 +112,33 @@ docker-compose up --build
 - `POST /gmail/delete` - Delete emails
 - `POST /gmail/move` - Move emails to label
 
+### Bulk Operations (NEW)
+- `POST /gmail/bulk/archive` - Archive multiple emails: `{ email_ids: [1, 2, 3] }`
+- `POST /gmail/bulk/delete` - Delete multiple emails
+- `POST /gmail/bulk/mark-read` - Mark multiple as read
+- `POST /gmail/bulk/mark-unread` - Mark multiple as unread
+- `POST /gmail/bulk/star` - Star multiple emails
+- `POST /gmail/bulk/unstar` - Unstar multiple emails
+
 ### AI & Categorization
-- `POST /categorize/email` - Categorize email: `{ subject, body }`
+- `POST /categorize/email` - Categorize email with auto-category creation: `{ subject, body }`
 - `POST /assistant/reply` - Generate reply: `{ prompt }`
 - `POST /assistant/gemini/summarize` - Summarize email with Gemini
 - `POST /assistant/gemini/actions` - Extract action items
 - `POST /assistant/gemini/rewrite` - Rewrite draft: `{ text, tone }`
+
+### Category Management (NEW)
+- `POST /categories/` - Create new category
+- `GET /categories/` - List all categories (system + custom)
+- `GET /categories/{id}` - Get category details
+- `PATCH /categories/{id}` - Update category
+- `DELETE /categories/{id}` - Delete category (non-system only)
+
+### Email Threading (NEW)
+- `GET /threads/` - List email threads with filters
+- `GET /threads/{thread_id}/emails` - Get all emails in a thread
+- `POST /threads/{thread_id}/archive` - Archive thread
+- `POST /threads/{thread_id}/unarchive` - Unarchive thread
 
 ### Account Management
 - `POST /accounts/` - Create new account
