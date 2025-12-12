@@ -1,4 +1,5 @@
 import logging
+import threading
 from typing import Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -11,24 +12,35 @@ from services.gmail_service import authenticate_gmail, fetch_emails
 log = logging.getLogger(__name__)
 
 _scheduler: Optional[BackgroundScheduler] = None
+_scheduler_lock = threading.Lock()
 
 
 def get_scheduler() -> BackgroundScheduler:
-    """Get or create the global scheduler instance."""
+    """Get or create the global scheduler instance (thread-safe)."""
     global _scheduler
     if _scheduler is None:
-        _scheduler = BackgroundScheduler()
-        _scheduler.start()
-        log.info("Scheduler started")
+        with _scheduler_lock:
+            # Double-check after acquiring lock
+            if _scheduler is None:
+                _scheduler = BackgroundScheduler()
+                _scheduler.start()
+                log.info("Scheduler started")
     return _scheduler
 
 
 def fetch_emails_for_account(account_id: int, account_email: str):
-    """Background task to fetch emails for a specific account."""
+    """
+    Background task to fetch emails for a specific account.
+    
+    Note: Currently uses default Gmail authentication. In production, this should:
+    1. Retrieve account-specific OAuth tokens from the database
+    2. Use those tokens to authenticate with Gmail API
+    3. Handle token refresh if expired
+    """
     try:
         log.info(f"Fetching emails for account {account_email} (ID: {account_id})")
-        # For now, use the default authentication
-        # In production, this should use account-specific tokens
+        # TODO: Implement account-specific authentication
+        # For now, use the default authentication (requires improvement)
         service = authenticate_gmail()
         emails = fetch_emails(service)
         

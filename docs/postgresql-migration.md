@@ -114,7 +114,7 @@ with Session(sqlite_engine) as src_session:
         # Migrate EmailRecord
         emails = src_session.exec(select(EmailRecord)).all()
         for email in emails:
-            dst_session.add(EmailRecord(**email.dict(exclude={'id'})))
+            dst_session.add(EmailRecord(**email.model_dump(exclude={'id'})))
         
         # Migrate other models as needed
         dst_session.commit()

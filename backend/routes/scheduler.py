@@ -15,7 +15,7 @@ router = APIRouter()
 
 class ScheduleUpdate(BaseModel):
     account_id: int
-    interval_minutes: int = Field(..., ge=1, le=1440, description="Fetch interval in minutes (1-1440)")
+    interval_minutes: int = Field(..., ge=5, le=1440, description="Fetch interval in minutes (5-1440, minimum 5 to avoid Gmail API rate limits)")
 
 
 @router.post("/start")

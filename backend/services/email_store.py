@@ -66,6 +66,11 @@ def list_emails(
         return list(session.exec(stmt))
 
 
+def _escape_like_pattern(pattern: str) -> str:
+    """Escape SQL LIKE wildcards in user input to prevent wildcard injection."""
+    return pattern.replace("%", "\\%").replace("_", "\\_")
+
+
 def search_emails(
     query: Optional[str] = None,
     from_email: Optional[str] = None,
@@ -83,24 +88,27 @@ def search_emails(
     with get_session() as session:
         stmt = select(EmailRecord)
         
-        # Full-text search across subject and body
+        # Full-text search across subject and body (with wildcard escaping)
         if query:
-            search_pattern = f"%{query}%"
+            escaped_query = _escape_like_pattern(query)
+            search_pattern = f"%{escaped_query}%"
             stmt = stmt.where(
                 or_(
-                    col(EmailRecord.subject).ilike(search_pattern),
-                    col(EmailRecord.body_text).ilike(search_pattern),
-                    col(EmailRecord.snippet).ilike(search_pattern)
+                    col(EmailRecord.subject).ilike(search_pattern, escape="\\"),
+                    col(EmailRecord.body_text).ilike(search_pattern, escape="\\"),
+                    col(EmailRecord.snippet).ilike(search_pattern, escape="\\")
                 )
             )
         
-        # Filter by sender
+        # Filter by sender (with wildcard escaping)
         if from_email:
-            stmt = stmt.where(col(EmailRecord.from_email).ilike(f"%{from_email}%"))
+            escaped_email = _escape_like_pattern(from_email)
+            stmt = stmt.where(col(EmailRecord.from_email).ilike(f"%{escaped_email}%", escape="\\"))
         
-        # Filter by subject
+        # Filter by subject (with wildcard escaping)
         if subject:
-            stmt = stmt.where(col(EmailRecord.subject).ilike(f"%{subject}%"))
+            escaped_subject = _escape_like_pattern(subject)
+            stmt = stmt.where(col(EmailRecord.subject).ilike(f"%{escaped_subject}%", escape="\\"))
         
         # Filter by category
         if category:
