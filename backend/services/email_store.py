@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Iterable, List, Optional
 
-from sqlmodel import select
+from sqlmodel import select, or_, col
 
 from db import get_session
 from models.email import EmailRecord
@@ -21,6 +21,7 @@ def upsert_emails(emails: Iterable[dict]) -> List[EmailRecord]:
                 "snippet": email.get("snippet", ""),
                 "body_text": email.get("body_text", ""),
                 "from_email": email.get("from_email"),
+                "account_id": email.get("account_id"),
                 "category": email.get("category", "Unlabeled"),
                 "sentiment": email.get("sentiment", "Neutral"),
                 "urgency": email.get("urgency", "Normal"),
@@ -60,6 +61,71 @@ def list_emails(
         if category:
             stmt = stmt.where(EmailRecord.category == category)
         stmt = stmt.offset(offset).limit(limit)
+        return list(session.exec(stmt))
+
+
+def search_emails(
+    query: Optional[str] = None,
+    from_email: Optional[str] = None,
+    subject: Optional[str] = None,
+    category: Optional[str] = None,
+    status: Optional[str] = None,
+    is_read: Optional[bool] = None,
+    is_starred: Optional[bool] = None,
+    date_from: Optional[datetime] = None,
+    date_to: Optional[datetime] = None,
+    limit: int = 100,
+    offset: int = 0,
+) -> List[EmailRecord]:
+    """Search and filter emails with multiple criteria."""
+    with get_session() as session:
+        stmt = select(EmailRecord)
+        
+        # Full-text search across subject and body
+        if query:
+            search_pattern = f"%{query}%"
+            stmt = stmt.where(
+                or_(
+                    col(EmailRecord.subject).ilike(search_pattern),
+                    col(EmailRecord.body_text).ilike(search_pattern),
+                    col(EmailRecord.snippet).ilike(search_pattern)
+                )
+            )
+        
+        # Filter by sender
+        if from_email:
+            stmt = stmt.where(col(EmailRecord.from_email).ilike(f"%{from_email}%"))
+        
+        # Filter by subject
+        if subject:
+            stmt = stmt.where(col(EmailRecord.subject).ilike(f"%{subject}%"))
+        
+        # Filter by category
+        if category:
+            stmt = stmt.where(EmailRecord.category == category)
+        
+        # Filter by status
+        if status:
+            stmt = stmt.where(EmailRecord.status == status)
+        
+        # Filter by read status
+        if is_read is not None:
+            stmt = stmt.where(EmailRecord.is_read == is_read)
+        
+        # Filter by starred status
+        if is_starred is not None:
+            stmt = stmt.where(EmailRecord.is_starred == is_starred)
+        
+        # Filter by date range
+        if date_from:
+            stmt = stmt.where(EmailRecord.created_at >= date_from)
+        if date_to:
+            stmt = stmt.where(EmailRecord.created_at <= date_to)
+        
+        # Order by most recent first
+        stmt = stmt.order_by(EmailRecord.created_at.desc())
+        stmt = stmt.offset(offset).limit(limit)
+        
         return list(session.exec(stmt))
 
 

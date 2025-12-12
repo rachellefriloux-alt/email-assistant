@@ -1,11 +1,12 @@
 
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from prometheus_client import Counter
 from pydantic import BaseModel
 
-from services.email_store import delete_by_gmail_ids, list_emails, upsert_emails
+from services.email_store import delete_by_gmail_ids, list_emails, search_emails, upsert_emails
 from services.gmail_service import (
     authenticate_gmail,
     delete_emails,
@@ -81,3 +82,34 @@ def move_emails(payload: MoveRequest):
             raise HTTPException(status_code=502, detail=f"Failed to move in Gmail: {exc}")
     EMAIL_MOVE_COUNTER.labels(remote=str(not payload.skip_remote)).inc(len(payload.gmail_ids))
     return {"moved": len(payload.gmail_ids)}
+
+
+@router.get("/search")
+def search_saved_emails(
+    query: Optional[str] = Query(None, description="Search text in subject, body, or snippet"),
+    from_email: Optional[str] = Query(None, description="Filter by sender email"),
+    subject: Optional[str] = Query(None, description="Filter by subject"),
+    category: Optional[str] = Query(None, description="Filter by category"),
+    status: Optional[str] = Query(None, description="Filter by status"),
+    is_read: Optional[bool] = Query(None, description="Filter by read status"),
+    is_starred: Optional[bool] = Query(None, description="Filter by starred status"),
+    date_from: Optional[datetime] = Query(None, description="Filter emails from this date (ISO format)"),
+    date_to: Optional[datetime] = Query(None, description="Filter emails until this date (ISO format)"),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+):
+    """Search and filter emails with multiple criteria."""
+    records = search_emails(
+        query=query,
+        from_email=from_email,
+        subject=subject,
+        category=category,
+        status=status,
+        is_read=is_read,
+        is_starred=is_starred,
+        date_from=date_from,
+        date_to=date_to,
+        limit=limit,
+        offset=offset,
+    )
+    return {"emails": [rec.dict() for rec in records], "count": len(records)}

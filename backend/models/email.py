@@ -6,7 +6,8 @@ from sqlmodel import Field, SQLModel
 
 class EmailRecord(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    gmail_id: Optional[str] = Field(default=None, index=True, unique=True)
+    gmail_id: Optional[str] = Field(default=None, index=True)
+    account_id: Optional[int] = Field(default=None, foreign_key="account.id", index=True)
     
     # Core Content
     subject: str

@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from db import init_db
-from routes import assistant, categorize, gmail
+from routes import assistant, categorize, gmail, accounts, scheduler, templates
 
 load_dotenv()
 
@@ -88,6 +88,9 @@ async def rate_limiter(request: Request, call_next):
 app.include_router(gmail.router, prefix="/gmail", tags=["Gmail"])
 app.include_router(categorize.router, prefix="/categorize", tags=["Categorization"])
 app.include_router(assistant.router, prefix="/assistant", tags=["AI Assistant"])
+app.include_router(accounts.router, prefix="/accounts", tags=["Accounts"])
+app.include_router(scheduler.router, prefix="/scheduler", tags=["Scheduler"])
+app.include_router(templates.router, prefix="/templates", tags=["Templates"])
 
 
 @app.on_event("startup")
